@@ -25,4 +25,7 @@ build/Release
 node_modules
 
 # Vim swap
-**/*.swp
+*.swp
+
+# bower_components
+bower_components
