@@ -10,7 +10,7 @@
         model: '='
       },
       require: 'ngModel',
-      template: '<input ng-model="name">',
+      template: '<input type="text" ng-model="name">',
       replace: true,
       link: function(scope, el, attr, ctrl) {
         var firstNameField = attr.firstNameField || "firstName";
