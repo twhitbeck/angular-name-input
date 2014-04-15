@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html ng-app="testApp">
+  <head>
+    <title>Test</title>
+  </head>
+
+  <body ng-controller="MainCtrl">
+    <tw-name-input model="user" placeholder="Name"></tw-name-input>
+
+    <p ng-bind="user | json"></p>
+
+    <script src="../bower_components/angular/angular.js"></script>
+    <script src="../angular-name-input.js"></script>
+
+    <script>
+      var app = angular.module('testApp', ['tw-name-input']);
+
+      app.controller('MainCtrl', function($scope) {
+        $scope.user = {
+          id: 1,
+          age: 15,
+          firstName: 'Tim'
+        };
+      });
+    </script>
+  </body>
+</html>
