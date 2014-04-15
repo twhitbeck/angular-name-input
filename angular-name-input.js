@@ -38,8 +38,7 @@
 
           return name;
         }, function(newVal, oldVal) {
-          console.log('setting \'%s\'', newVal);
-          ctrl.$setViewValue(newVal);
+          scope.name = newVal;
         });
 
         var one = /^(\w+)$/;
