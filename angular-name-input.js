@@ -17,6 +17,41 @@
         var middleNameField = attr.middleNameField || "middleName";
         var lastNameField = attr.lastNameField || "lastName";
 
+        var attrPresent = function(name) {
+          return typeof attr[name] !== 'undefined';
+        };
+
+        var firstRequired = attrPresent('firstRequired');
+        var middleRequired = attrPresent('middleRequired');
+        var lastRequired = attrPresent('lastRequired');
+
+        var validate = function() {
+          if (firstRequired) {
+            if (!scope.model || !scope.model[firstNameField]) {
+              ctrl.$setValidity('name-first-required', false);
+            } else {
+              ctrl.$setValidity('name-first-required', true);
+            }
+          }
+
+          if (middleRequired) {
+            if (!scope.model || !scope.model[middleNameField]) {
+              ctrl.$setValidity('name-middle-required', false);
+            } else {
+              ctrl.$setValidity('name-middle-required', true);
+            }
+          }
+
+          if (lastRequired) {
+            if (!scope.model || !scope.model[lastNameField]) {
+              ctrl.$setValidity('name-last-required', false);
+            } else {
+              ctrl.$setValidity('name-last-required', true);
+            }
+          }
+        };
+
+        /*
         scope.$watch(function() {
           if (!scope.model) {
             return '';
@@ -38,8 +73,9 @@
 
           return name;
         }, function(newVal, oldVal) {
-          scope.name = newVal;
+          parse(newVal);
         });
+        */
 
         var one = /^(\w+)$/;
         var two = /^(\w+)\s+(\w+)$/;
@@ -64,6 +100,8 @@
           if (!input) {
             setName();
 
+            validate();
+
             return;
           }
 
@@ -77,6 +115,8 @@
           } else if (m = three.exec(trimmed)) {
             setName(m[1], m[2], m[3]);
           }
+
+          validate();
 
           return input;
         };

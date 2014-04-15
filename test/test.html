@@ -18,6 +18,13 @@
       user2: {{user2 | json}}
     </p>
 
+    <hr>
+    <form name="userForm">
+      <tw-name-input name="name" model="user3" placeholder="Name 3" required last-required middle-required></tw-name-input>
+
+      <input type="submit" value="Submit" ng-disabled="userForm.$invalid">
+    </form>
+
     <script src="../bower_components/angular/angular.js"></script>
     <script src="../angular-name-input.js"></script>
 
