@@ -102,6 +102,13 @@
         };
 
         ctrl.$formatters.push(function(model) {
+          var m = model || {};
+          validate({
+            first: m[firstNameField],
+            middle: m[middleNameField],
+            last: m[lastNameField]
+          });
+
           return model ? format(model) : '';
         });
       }

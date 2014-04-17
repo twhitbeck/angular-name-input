@@ -13,10 +13,14 @@
 
     <hr>
 
-    <input type="text" ng-model="user2" tw-name-input>
-    <p ng-show="user2">
-      user2: {{user2 | json}}
-    </p>
+    <form name="user2Form">
+      <input type="text" ng-model="user2" tw-name-input middle-required>
+
+      <input type="submit" value="Submit" ng-disabled="user2Form.$invalid">
+      <p ng-show="user2">
+        user2: {{user2 | json}}
+      </p>
+  </form>
 
     <hr>
     <form name="userForm">
