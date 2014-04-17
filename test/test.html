@@ -5,7 +5,7 @@
   </head>
 
   <body ng-controller="MainCtrl">
-    <tw-name-input model="user" placeholder="Name"></tw-name-input>
+    <input type="text" ng-model="user" tw-name-input>
 
     <p ng-show="user">
       user: {{user | json}}
@@ -13,14 +13,18 @@
 
     <hr>
 
-    <tw-name-input model="user2" placeholder="Name 2"></tw-name-input>
+    <input type="text" ng-model="user2" tw-name-input>
     <p ng-show="user2">
       user2: {{user2 | json}}
     </p>
 
     <hr>
     <form name="userForm">
-      <tw-name-input name="name" model="user3" placeholder="Name 3" required last-required middle-required></tw-name-input>
+      <input type="text" ng-model="user3" tw-name-input first-required="firstRequired" middle-required="middleRequired" last-required="lastRequired">
+
+      <label>First <input type="checkbox" ng-model="firstRequired"></label>
+      <label>Middle <input type="checkbox" ng-model="middleRequired"></label>
+      <label>Last <input type="checkbox" ng-model="lastRequired"></label>
 
       <input type="submit" value="Submit" ng-disabled="userForm.$invalid">
     </form>
@@ -37,6 +41,14 @@
           age: 15,
           firstName: 'Tim',
           lastName: 'Whitbeck'
+        };
+
+        $scope.lastRequired = true;
+        $scope.firstRequired = true;
+        $scope.middleRequired = false;
+
+        $scope.test = function(user) {
+          console.log('first: ' + user.firstName + ', middle: ' + user.middleName + ', last: ' + user.lastName);
         };
       });
     </script>

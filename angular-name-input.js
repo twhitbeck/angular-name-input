@@ -4,124 +4,106 @@
   var module = angular.module('tw-name-input', []);
 
   module.directive('twNameInput', function() {
+    var one = /^(\w+)$/;
+    var two = /^(\w+)\s+(\w+)$/;
+    var three = /^(\w+)\s+(\w+)\s+(\w+)$/;
+
     return {
-      restrict: 'E',
-      scope: {
-        model: '='
-      },
       require: 'ngModel',
-      template: '<input type="text" ng-model="name">',
-      replace: true,
       link: function(scope, el, attr, ctrl) {
-        var firstNameField = attr.firstNameField || "firstName";
-        var middleNameField = attr.middleNameField || "middleName";
-        var lastNameField = attr.lastNameField || "lastName";
+        var firstNameField = attr.firstNameField || 'firstName';
+        var middleNameField = attr.middleNameField || 'middleName';
+        var lastNameField = attr.lastNameField || 'lastName';
 
-        var attrPresent = function(name) {
-          return typeof attr[name] !== 'undefined';
-        };
+        var required = {};
+        angular.forEach(['first', 'middle', 'last'], function(partName) {
+          var attrName = partName + 'Required';
 
-        var firstRequired = attrPresent('firstRequired');
-        var middleRequired = attrPresent('middleRequired');
-        var lastRequired = attrPresent('lastRequired');
+          if (attr[attrName] === '') {
+            required[partName] = true;
+          } else if (typeof attr[attrName] !== 'undefined') {
+            scope.$watch(attr[attrName], function(newVal, oldVal) {
+              required[partName] = !!newVal;
 
-        var validate = function() {
-          if (firstRequired) {
-            if (!scope.model || !scope.model[firstNameField]) {
-              ctrl.$setValidity('name-first-required', false);
-            } else {
-              ctrl.$setValidity('name-first-required', true);
-            }
+              var model = ctrl.$modelValue || {};
+
+              validate({
+                first: model[firstNameField],
+                middle: model[middleNameField],
+                last: model[lastNameField]
+              });
+            });
           }
-
-          if (middleRequired) {
-            if (!scope.model || !scope.model[middleNameField]) {
-              ctrl.$setValidity('name-middle-required', false);
-            } else {
-              ctrl.$setValidity('name-middle-required', true);
-            }
-          }
-
-          if (lastRequired) {
-            if (!scope.model || !scope.model[lastNameField]) {
-              ctrl.$setValidity('name-last-required', false);
-            } else {
-              ctrl.$setValidity('name-last-required', true);
-            }
-          }
-        };
-
-        /*
-        scope.$watch(function() {
-          if (!scope.model) {
-            return '';
-          }
-
-          var name = '';
-
-          if (scope.model[firstNameField]) {
-            name += scope.model[firstNameField];
-          }
-
-          if (scope.model[middleNameField]) {
-            name += ' ' + scope.model[middleNameField];
-          }
-
-          if (scope.model[lastNameField]) {
-            name += ' ' + scope.model[lastNameField];
-          }
-
-          return name;
-        }, function(newVal, oldVal) {
-          parse(newVal);
         });
-        */
 
-        var one = /^(\w+)$/;
-        var two = /^(\w+)\s+(\w+)$/;
-        var three = /^(\w+)\s+(\w+)\s+(\w+)$/;
+        var validate = function(parts) {
+          angular.forEach(parts, function(part, partName) {
+            if (typeof required[partName] === 'undefined') {
+              return;
+            }
 
-        var setName = function(first, middle, last) {
-          if (!scope.model) {
-            scope.model = {};
-          }
+            var valid;
+            if (required[partName]) {
+              valid = !!part;
+            } else {
+              valid = true;
+            }
 
-          if (typeof last === 'undefined') {
-            last = middle;
-            middle = undefined;
-          }
-
-          scope.model[firstNameField] = first;
-          scope.model[middleNameField] = middle;
-          scope.model[lastNameField] = last;
+            ctrl.$setValidity(partName + 'Required', valid);
+          });
         };
 
-        var parse = function(input) {
-          if (!input) {
-            setName();
+        ctrl.$parsers.push(function(input) {
+          input = (input || '').trim();
 
-            validate();
-
-            return;
+          // Attempt to parse a full name into name parts
+          var m, first, middle, last;
+          if (m = one.exec(input)) {
+            first = m[1];
+          } else if (m = two.exec(input)) {
+            first = m[1];
+            last = m[2];
+          } else if (m = three.exec(input)) {
+            first = m[1];
+            middle = m[2];
+            last = m[3];
           }
 
-          var trimmed = input.trim();
+          var nameParts = {};
+          nameParts[firstNameField] = first;
+          nameParts[middleNameField] = middle;
+          nameParts[lastNameField] = last;
 
-          var m;
-          if (m = one.exec(trimmed)) {
-            setName(m[1]);
-          } else if (m = two.exec(trimmed)) {
-            setName(m[1], m[2]);
-          } else if (m = three.exec(trimmed)) {
-            setName(m[1], m[2], m[3]);
+          validate({
+            first: first,
+            middle: middle,
+            last: last
+          });
+
+          return angular.extend({}, ctrl.$modelValue, nameParts);
+        });
+
+        var format = function(model) {
+          var value = '';
+
+          if (model[firstNameField]) {
+            value = model[firstNameField];
           }
 
-          validate();
+          if (model[middleNameField]) {
+            value += ' ' + model[middleNameField];
+          }
 
-          return input;
+          if (model[lastNameField]) {
+            value += ' ' + model[lastNameField];
+          }
+
+          return value;
         };
 
-        ctrl.$parsers.push(parse);
+        ctrl.$formatters.push(function(model) {
+          return model ? format(model) : '';
+        });
       }
     };
   });
