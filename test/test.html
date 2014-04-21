@@ -5,26 +5,26 @@
   </head>
 
   <body ng-controller="MainCtrl">
-    <input type="text" ng-model="user" tw-name-input>
+    <input type="text" ng-model="userName" tw-name-input="user">
 
-    <p ng-show="user">
-      user: {{user | json}}
-    </p>
+    <p ng-bind-template="userName: {{userName}}"></p>
+    <p ng-bind-template="user: {{user | json}}"></p>
 
     <hr>
 
     <form name="user2Form">
-      <input type="text" ng-model="user2" tw-name-input middle-required>
+      <input type="text" ng-model="user2Name" tw-name-input="user2" middle-required>
 
       <input type="submit" value="Submit" ng-disabled="user2Form.$invalid">
-      <p ng-show="user2">
+      <p>
         user2: {{user2 | json}}
       </p>
-  </form>
+    </form>
 
     <hr>
+
     <form name="userForm">
-      <input type="text" ng-model="user3" tw-name-input first-required="firstRequired" middle-required="middleRequired" last-required="lastRequired">
+      <input type="text" ng-model="user3Name" tw-name-input="user3" first-required="firstRequired" middle-required="middleRequired" last-required="lastRequired">
 
       <label>First <input type="checkbox" ng-model="firstRequired"></label>
       <label>Middle <input type="checkbox" ng-model="middleRequired"></label>
@@ -32,6 +32,14 @@
 
       <input type="submit" value="Submit" ng-disabled="userForm.$invalid">
     </form>
+
+    <hr>
+
+    <input type="text" ng-model="user4Name" tw-name-input="user4">
+    <select ng-model="user4" ng-options="model.model as model.name for model in models">
+    </select>
+
+    <p>User4: {{user4 | json}}</p>
 
     <script src="../bower_components/angular/angular.js"></script>
     <script src="../angular-name-input.js"></script>
@@ -54,6 +62,26 @@
         $scope.test = function(user) {
           console.log('first: ' + user.firstName + ', middle: ' + user.middleName + ', last: ' + user.lastName);
         };
+
+        $scope.models = [
+          {
+          name: 'Nameless',
+          model: {
+            id: 5,
+            age: 23
+          }
+        },
+        {
+          name: 'Bob',
+          model: {
+            id: 7,
+            age: 44,
+            firstName: 'Bob',
+            middleName: 'Andrew',
+            lastName: 'McGee'
+          }
+        }
+        ];
       });
     </script>
   </body>

@@ -3,7 +3,7 @@
 
   var module = angular.module('tw-name-input', []);
 
-  module.directive('twNameInput', function() {
+  module.directive('twNameInput', function($parse) {
     var one = /^(\w+)$/;
     var two = /^(\w+)\s+(\w+)$/;
     var three = /^(\w+)\s+(\w+)\s+(\w+)$/;
@@ -11,6 +11,13 @@
     return {
       require: 'ngModel',
       link: function(scope, el, attr, ctrl) {
+        if (!attr.twNameInput) {
+          return;
+        }
+
+        var getter = $parse(attr.twNameInput);
+        var setter = getter.assign;
+
         var firstNameField = attr.firstNameField || 'firstName';
         var middleNameField = attr.middleNameField || 'middleName';
         var lastNameField = attr.lastNameField || 'lastName';
@@ -53,17 +60,17 @@
           });
         };
 
-        ctrl.$parsers.push(function(input) {
-          input = (input || '').trim();
+        var interpret = function(input) {
+          var value = (input || '');
 
           // Attempt to parse a full name into name parts
           var m, first, middle, last;
-          if (m = one.exec(input)) {
+          if (m = one.exec(value)) {
             first = m[1];
-          } else if (m = two.exec(input)) {
+          } else if (m = two.exec(value)) {
             first = m[1];
             last = m[2];
-          } else if (m = three.exec(input)) {
+          } else if (m = three.exec(value)) {
             first = m[1];
             middle = m[2];
             last = m[3];
@@ -80,14 +87,21 @@
             last: last
           });
 
-          return angular.extend({}, ctrl.$modelValue, nameParts);
-        });
+          var model = getter(scope);
+          setter(scope, angular.extend(model || {}, nameParts));
+
+          return input;
+        };
 
         var format = function(model) {
+          if (!model) {
+            return '';
+          }
+
           var value = '';
 
           if (model[firstNameField]) {
-            value = model[firstNameField];
+            value += model[firstNameField];
           }
 
           if (model[middleNameField]) {
@@ -101,16 +115,26 @@
           return value;
         };
 
-        ctrl.$formatters.push(function(model) {
-          var m = model || {};
-          validate({
-            first: m[firstNameField],
-            middle: m[middleNameField],
-            last: m[lastNameField]
-          });
-
-          return model ? format(model) : '';
+        ctrl.$parsers.push(function(input) {
+          var result = interpret(input);
+          return result;
         });
+        ctrl.$formatters.push(function(input) {
+          var result = interpret(input);
+          return result;
+        });
+
+        scope.$watch(function() {
+          return format(getter(scope));
+        }, function(newVal, oldVal) {
+          ctrl.$setViewValue(newVal);
+          ctrl.$render();
+        });
+
+        // Jumpstart with whatever is initially in the model
+        var initial = getter(scope);
+        var name = format(initial);
+        ctrl.$setViewValue(name);
       }
     };
   });
