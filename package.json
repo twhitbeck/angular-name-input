@@ -1,6 +1,6 @@
 {
   "name": "angular-name-input",
-  "version": "0.0.1",
+  "version": "0.8.1",
   "devDependencies": {
     "grunt": "~0.4.4",
     "grunt-contrib-connect": "^0.7.1",
