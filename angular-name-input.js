@@ -3,7 +3,7 @@
 
   var module = angular.module('tw-name-input', []);
 
-  module.directive('twNameInput', function($parse) {
+  module.directive('twNameInput', function($parse, $timeout) {
     var one = /^(\w+)$/;
     var two = /^(\w+)\s+(\w+)$/;
     var three = /^(\w+)\s+(\w+)\s+(\w+)$/;
@@ -21,6 +21,15 @@
         var firstNameField = attr.firstNameField || 'firstName';
         var middleNameField = attr.middleNameField || 'middleName';
         var lastNameField = attr.lastNameField || 'lastName';
+
+        var fixCap, fixCapAttr = attr.fixCap;
+        if (typeof fixCapAttr === 'undefined') {
+          fixCap = false;
+        } else if (fixCapAttr.length) {
+          fixCap = !!(scope.$eval(attr.fixCap));
+        } else {
+          fixCap = true;
+        }
 
         var required = {};
         angular.forEach(['first', 'middle', 'last'], function(partName) {
@@ -43,6 +52,23 @@
           }
         });
 
+        var lower = /^[a-z]+$/;
+        var upper = /^[A-Z]{2,}$/;
+        var maybeFixCapitalization = function(name) {
+          if (!fixCap) {
+            return name;
+          }
+
+          // If the name is all lower or all upper case
+          if (name && lower.test(name) || upper.test(name)) {
+            var fixed = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+
+            return fixed;
+          }
+
+          return name;
+        };
+
         var validate = function(parts) {
           angular.forEach(parts, function(part, partName) {
             if (typeof required[partName] === 'undefined') {
@@ -62,18 +88,19 @@
 
         var interpret = function(input) {
           var value = (input || '');
+          console.log('interpret \'%s\'', value);
 
           // Attempt to parse a full name into name parts
           var m, first, middle, last;
           if (m = one.exec(value)) {
-            first = m[1];
+            first = maybeFixCapitalization(m[1]);
           } else if (m = two.exec(value)) {
-            first = m[1];
-            last = m[2];
+            first = maybeFixCapitalization(m[1]);
+            last = maybeFixCapitalization(m[2]);
           } else if (m = three.exec(value)) {
-            first = m[1];
-            middle = m[2];
-            last = m[3];
+            first = maybeFixCapitalization(m[1]);
+            middle = maybeFixCapitalization(m[2]);
+            last = maybeFixCapitalization(m[3]);
           }
 
           var nameParts = {};
@@ -87,10 +114,7 @@
             last: last
           });
 
-          var model = getter(scope);
-          setter(scope, angular.extend(model || {}, nameParts));
-
-          return input;
+          setter(scope, angular.extend(getter(scope) || {}, nameParts));
         };
 
         var format = function(model) {
@@ -115,26 +139,54 @@
           return value;
         };
 
+        var parsed;
         ctrl.$parsers.push(function(input) {
-          var result = interpret(input);
-          return result;
-        });
-        ctrl.$formatters.push(function(input) {
-          var result = interpret(input);
-          return result;
+          interpret(input);
+          parsed = true;
+
+          return input;
         });
 
+        ctrl.$formatters.push(function(input) {
+          interpret(input);
+
+          return input;
+        });
+
+        var simpleUpdate = function(newVal) {
+          // Manually update viewValue, modelValue, model, and run $render (no need to go through parsers)
+          ctrl.$viewValue = newVal;
+          ctrl.$modelValue = newVal;
+          nameModelSetter(scope, newVal);
+        };
+
+        var nameModelGetter = $parse(attr.ngModel);
+        var nameModelSetter = nameModelGetter.assign;
+
+        // Watch for changes to the name of the model
         scope.$watch(function() {
           return format(getter(scope));
         }, function(newVal, oldVal) {
-          ctrl.$setViewValue(newVal);
-          ctrl.$render();
+          // Initially, newVal === oldVal
+          if (newVal !== oldVal && !parsed) {
+            console.log('$watch: \'%s\' -> \'%s\'', oldVal, newVal);
+            simpleUpdate(newVal);
+            ctrl.$render();
+          }
+
+          parsed = true;
         });
 
         // Jumpstart with whatever is initially in the model
-        var initial = getter(scope);
-        var name = format(initial);
-        ctrl.$setViewValue(name);
+        var initialModel = getter(scope);
+        if (typeof initialModel !== 'undefined') {
+          simpleUpdate(format(initialModel));
+
+          // This needs to timeout to be sure it runs after the ngModel directive has been applied (and we have the appropriate $render() function, not noop)
+          $timeout(function() {
+            ctrl.$render();
+          });
+        }
       }
     };
   });
