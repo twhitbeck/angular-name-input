@@ -88,7 +88,6 @@
 
         var interpret = function(input) {
           var value = (input || '');
-          console.log('interpret \'%s\'', value);
 
           // Attempt to parse a full name into name parts
           var m, first, middle, last;
@@ -169,7 +168,6 @@
         }, function(newVal, oldVal) {
           // Initially, newVal === oldVal
           if (newVal !== oldVal && !parsed) {
-            console.log('$watch: \'%s\' -> \'%s\'', oldVal, newVal);
             simpleUpdate(newVal);
             ctrl.$render();
           }
