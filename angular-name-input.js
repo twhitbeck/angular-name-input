@@ -41,7 +41,7 @@
             scope.$watch(attr[attrName], function(newVal, oldVal) {
               required[partName] = !!newVal;
 
-              var model = ctrl.$modelValue || {};
+              var model = getter(scope);
 
               validate({
                 first: model[firstNameField],
@@ -152,6 +152,9 @@
           return input;
         });
 
+        var nameModelGetter = $parse(attr.ngModel);
+        var nameModelSetter = nameModelGetter.assign;
+
         var simpleUpdate = function(newVal) {
           // Manually update viewValue, modelValue, model, and run $render (no need to go through parsers)
           ctrl.$viewValue = newVal;
@@ -159,26 +162,35 @@
           nameModelSetter(scope, newVal);
         };
 
-        var nameModelGetter = $parse(attr.ngModel);
-        var nameModelSetter = nameModelGetter.assign;
-
-        // Watch for changes to the name of the model
-        scope.$watch(function() {
-          return format(getter(scope));
-        }, function(newVal, oldVal) {
+        // Watch for changes to the model
+        scope.$watch(attr.twNameInput, function(newVal, oldVal) {
           // Initially, newVal === oldVal
           if (newVal !== oldVal && !parsed) {
-            simpleUpdate(newVal);
+            var formatted = format(newVal);
+            simpleUpdate(formatted);
+
             ctrl.$render();
+
+            validate({
+              first: newVal[firstNameField],
+              middle: newVal[middleNameField],
+              last: newVal[lastNameField]
+            });
           }
 
-          parsed = true;
+          parsed = false;
         });
 
         // Jumpstart with whatever is initially in the model
         var initialModel = getter(scope);
         if (typeof initialModel !== 'undefined') {
           simpleUpdate(format(initialModel));
+
+          validate({
+            first: initialModel[firstNameField],
+            middle: initialModel[middleNameField],
+            last: initialModel[lastNameField]
+          });
 
           // This needs to timeout to be sure it runs after the ngModel directive has been applied (and we have the appropriate $render() function, not noop)
           $timeout(function() {

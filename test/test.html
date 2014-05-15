@@ -15,9 +15,8 @@
       <input type="text" ng-model="user2Name" tw-name-input="user2" middle-required>
 
       <input type="submit" value="Submit" ng-disabled="user2Form.$invalid">
-      <p>
-        user2: {{user2 | json}}
-      </p>
+      <p ng-bind-template="user2: {{user2 | json}}"></p>
+      <p ng-bind="user2Form.$error | json"></p>
     </form>
 
     <hr>
@@ -30,6 +29,7 @@
       <label>Last <input type="checkbox" ng-model="lastRequired"></label>
 
       <input type="submit" value="Submit" ng-disabled="userForm.$invalid">
+      <p ng-bind="userForm.$error | json"></p>
     </form>
     <p ng-bind-template="user3: {{user3 | json}}"></p>
 
