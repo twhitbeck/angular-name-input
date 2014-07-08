@@ -3,7 +3,7 @@
 
   var module = angular.module('tw-name-input', []);
 
-  module.directive('twNameInput', function($parse, $timeout) {
+  module.directive('twNameInput', ['$parse', '$timeout', function($parse, $timeout) {
     var one = /^(\w+)$/;
     var two = /^(\w+)\s+(\w+)$/;
     var three = /^(\w+)\s+(\w+)\s+(\w+)$/;
@@ -199,5 +199,5 @@
         }
       }
     };
-  });
+  }]);
 })();
