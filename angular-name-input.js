@@ -138,10 +138,8 @@
           return value;
         };
 
-        var parsed;
         ctrl.$parsers.push(function(input) {
           interpret(input);
-          parsed = true;
 
           return input;
         });
@@ -165,7 +163,7 @@
         // Watch for changes to the model
         scope.$watch(attr.twNameInput, function(newVal, oldVal) {
           // Initially, newVal === oldVal
-          if (newVal !== oldVal && !parsed) {
+          if (newVal !== oldVal) {
             var formatted = format(newVal);
             simpleUpdate(formatted);
 
@@ -177,8 +175,6 @@
               last: newVal[lastNameField]
             });
           }
-
-          parsed = false;
         });
 
         // Jumpstart with whatever is initially in the model

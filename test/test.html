@@ -46,6 +46,15 @@
     <input type="text" ng-model="user5Name" tw-name-input="user5" fix-cap>
     <p ng-bind-template="user5: {{user5 | json}}"></p>
 
+    <hr>
+
+    <form name="user6Form">
+      <input type="text" name="user6" ng-model="user6Name" tw-name-input="user6" first-required last-required placeholder="user6">
+      <select ng-model="user6" ng-options="model.model as model.name for model in models"></select>
+      <p ng-bind-template="user6: {{user6 | json}}"></p>
+      <p ng-show="user6Form.$invalid">Requires first and last!</p>
+    </form>
+
     <script src="../bower_components/angular/angular.js"></script>
     <script src="../angular-name-input.js"></script>
 
